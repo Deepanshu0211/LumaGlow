@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ambient Mode Video</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden;
+    }
+    .ambient-container {
+ 	 position: fixed; /* Cover full viewport */
+ 	 top: 0;
+ 	 left: 0;
+  	width: 100vw;
+  	height: 100vh;
+
+  	display: flex;
+ 	 align-items: center;
+ 	 justify-content: center;
+
+ 	 background: radial-gradient(circle, #000, #111); /* Ambient background */
+ 	 transition: background 0.3s ease;
+ 	 z-index: 0;
+}	
+    video {
+  max-width: 80vw;
+  max-height: 80vh;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+}
+  </style>
+</head>
+<body>
+  <div class="ambient-container" id="ambient">
+    <video id="video" controls crossorigin="anonymous">
+  <source src="https://s3b-assets-bucket.s3.amazonaws.com/test-videos/BigBuckBunny.mp4" type="video/mp4" />
+</video>
+
+  </div>
+
+  <script src="ambient.js"></script>
+</body>
+</html>
