@@ -14,15 +14,8 @@
 
 ---
 
-## 📷 Preview
 
-![Preview](preview.gif)
-
-The ambient container changes color as the video plays and scenes change.
-
----
-
-## 🚀 Live Demo
+## Video
 
 You can use a hosted video like **Big Buck Bunny** for testing:
 
@@ -49,6 +42,9 @@ LumaGlow/
 ```bash
 git clone https://github.com/yourusername/lumaglow.git
 cd lumaglow
+
+```
+
 Or download the `.zip` and extract it.
 
 ## 🧩 Customization Ideas
