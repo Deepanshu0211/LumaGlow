@@ -40,7 +40,7 @@ LumaGlow/
 ### 1. Clone or Download the Repo
 
 ```bash
-git clone https://github.com/yourusername/lumaglow.git
+git clone https://github.com/Deepanshu0211/lumaglow.git
 cd lumaglow
 
 ```
