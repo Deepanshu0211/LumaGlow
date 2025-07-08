@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" href="data:,">
-
   <title>Aesthetic Ambient Video</title>
   <style>
     body {
@@ -13,14 +12,12 @@
       overflow: hidden;
       font-family: 'Segoe UI', sans-serif;
     }
-
     .ambient-wrapper {
       position: fixed;
       inset: 0;
       overflow: hidden;
       z-index: 0;
     }
-
     #ambientCanvas {
       width: 100vw;
       height: 100vh;
@@ -35,7 +32,6 @@
       opacity: 1;
       transition: opacity 0.5s ease;
     }
-
     .video-container {
       position: relative;
       z-index: 1;
@@ -44,7 +40,6 @@
       align-items: center;
       height: 100vh;
     }
-
     video {
       max-width: 80vw;
       max-height: 80vh;
@@ -52,11 +47,9 @@
       box-shadow: 0 0 80px rgba(0, 0, 0, 0.4);
       transition: box-shadow 0.3s ease;
     }
-
     video:hover {
       box-shadow: 0 0 120px rgba(255, 255, 255, 0.2), 0 0 80px rgba(0, 0, 0, 0.6);
     }
-
     .controls {
       position: absolute;
       top: 20px;
@@ -66,7 +59,6 @@
       gap: 10px;
       z-index: 2;
     }
-
     .glass-btn {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -79,148 +71,89 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
-
     .glass-btn:hover {
       background: rgba(255, 255, 255, 0.16);
       transform: scale(1.05);
     }
-
     #videoUpload {
       display: none;
     }
-
     label[for="videoUpload"] {
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-
-  <!-- Upload & Controls -->
   <div class="controls">
     <label for="videoUpload" class="glass-btn">🎬 Upload Video</label>
     <button id="toggleAmbient" class="glass-btn">🌈 Toggle Ambient</button>
-    <!-- You can add more fun here -->
   </div>
-  <input type="file" id="videoUpload" accept="video/*" />
-
-  <!-- Ambient Canvas -->
+  <input type="file" id="videoUpload" accept="video/*,audio/*" />
   <div class="ambient-wrapper">
     <canvas id="ambientCanvas" width="64" height="36"></canvas>
   </div>
-
-  <!-- Video Container -->
   <div class="video-container">
     <video id="video" controls crossorigin="anonymous">
       <source src="https://s3b-assets-bucket.s3.amazonaws.com/test-videos/BigBuckBunny.mp4" type="video/mp4">
     </video>
   </div>
 <script>
-
   window.addEventListener("DOMContentLoaded", () => {
-  const video = document.getElementById("video");
-  const upload = document.getElementById("videoUpload");
-  const ambientCanvas = document.getElementById("ambientCanvas");
-  const ambientCtx = ambientCanvas.getContext("2d");
-  const visualizerCanvas = document.getElementById("visualizerCanvas");
-  const vCtx = visualizerCanvas.getContext("2d");
-  const audioControls = document.getElementById("audioControls");
-  const playPauseBtn = document.getElementById("audioPlayPause");
-  const toggleBtn = document.getElementById("toggleAmbient");
+    const video = document.getElementById("video");
+    const upload = document.getElementById("videoUpload");
+    const ambientCanvas = document.getElementById("ambientCanvas");
+    const ambientCtx = ambientCanvas.getContext("2d");
+    const toggleBtn = document.getElementById("toggleAmbient");
+    let ambientOn = true;
 
-  let ambientOn = true;
-  let audioContext, analyser, sourceNode, dataArray;
+    ambientCanvas.width = window.innerWidth;
+    ambientCanvas.height = window.innerHeight;
 
-  ambientCanvas.width = visualizerCanvas.width = window.innerWidth;
-  ambientCanvas.height = visualizerCanvas.height = window.innerHeight;
-
-  function updateAmbient() {
-    if (!ambientOn || video.paused || video.ended) return;
-    try {
-      ambientCtx.drawImage(video, 0, 0, ambientCanvas.width, ambientCanvas.height);
-    } catch {}
-    requestAnimationFrame(updateAmbient);
-  }
-
-  function startVisualizer(audioElement) {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 64;
-      sourceNode = audioContext.createMediaElementSource(audioElement);
-      sourceNode.connect(analyser);
-      analyser.connect(audioContext.destination);
-      dataArray = new Uint8Array(analyser.frequencyBinCount);
-    }
-    function draw() {
-      requestAnimationFrame(draw);
-      analyser.getByteFrequencyData(dataArray);
-      vCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
-      const grd = vCtx.createLinearGradient(0, 0, visualizerCanvas.width, visualizerCanvas.height);
-      grd.addColorStop(0, '#00f5d4');
-      grd.addColorStop(0.5, '#9b5de5');
-      grd.addColorStop(1, '#f15bb5');
-      const barWidth = (visualizerCanvas.width / dataArray.length) * 2.5;
-      let x = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        const h = dataArray[i];
-        vCtx.fillStyle = grd;
-        vCtx.fillRect(x, visualizerCanvas.height - h, barWidth, h);
-        x += barWidth + 2;
-      }
-    }
-    draw();
-  }
-
-  upload.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    video.src = url;
-    video.load();
-    video.play().catch(() => console.log("Autoplay blocked"));
-    if (file.type.startsWith("audio/")) {
-      visualizerCanvas.style.display = "block";
-      audioControls.style.display = "flex";
-      startVisualizer(video);
-    } else {
-      visualizerCanvas.style.display = "none";
-      audioControls.style.display = "none";
+    function updateAmbient() {
+      if (!ambientOn || video.paused || video.ended) return;
+      try {
+        ambientCtx.drawImage(video, 0, 0, ambientCanvas.width, ambientCanvas.height);
+      } catch {}
       requestAnimationFrame(updateAmbient);
     }
-    localStorage.setItem("lastMedia", url);
-  });
 
-  toggleBtn.addEventListener("click", () => {
-    ambientOn = !ambientOn;
-    ambientCanvas.style.opacity = ambientOn ? "1" : "0";
-    toggleBtn.textContent = ambientOn ? "🌈 Toggle Ambient" : "❌ Ambient Off";
-  });
+    upload.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      video.src = url;
+      video.load();
+      video.play().catch(() => console.log("Autoplay blocked"));
+      requestAnimationFrame(updateAmbient);
+      localStorage.setItem("lastMedia", url);
+    });
 
-  video.addEventListener("play", () => {
-    playPauseBtn.textContent = "⏸️";
-    if (visualizerCanvas.style.display !== "block") requestAnimationFrame(updateAmbient);
-  });
-  video.addEventListener("pause", () => playPauseBtn.textContent = "▶️");
-  playPauseBtn.addEventListener("click", () => video.paused ? video.play() : video.pause());
+    toggleBtn.addEventListener("click", () => {
+      ambientOn = !ambientOn;
+      ambientCanvas.style.opacity = ambientOn ? "1" : "0";
+      toggleBtn.textContent = ambientOn ? "🌈 Toggle Ambient" : "❌ Ambient Off";
+    });
 
-  const lastMedia = localStorage.getItem("lastMedia");
-  if (lastMedia) {
-    video.src = lastMedia;
-    video.play().catch(() => {});
-  }
+    video.addEventListener("play", () => {
+      requestAnimationFrame(updateAmbient);
+    });
 
-  document.body.addEventListener("dragover", e => e.preventDefault());
-  document.body.addEventListener("drop", e => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      upload.files = e.dataTransfer.files;
-      upload.dispatchEvent(new Event("change"));
+    const lastMedia = localStorage.getItem("lastMedia");
+    if (lastMedia) {
+      video.src = lastMedia;
+      video.play().catch(() => {});
     }
-  });
-});
-</script>
 
+    document.body.addEventListener("dragover", e => e.preventDefault());
+    document.body.addEventListener("drop", e => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        upload.files = e.dataTransfer.files;
+        upload.dispatchEvent(new Event("change"));
+      }
+    });
+  });
+</script>
 </body>
 </html>
