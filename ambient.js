@@ -1,44 +1,69 @@
-const video = document.getElementById('video');
-const ambient = document.getElementById('ambient');
+  const video = document.getElementById("video");
+  const upload = document.getElementById("videoUpload");
+  const canvas = document.getElementById("ambientCanvas");
+  const ctx = canvas.getContext("2d");
+  const toggleBtn = document.getElementById("toggleAmbient");
 
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
+  let ambientOn = true;
 
-canvas.width = 16;
-canvas.height = 9;
-
-function getAverageColor() {
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const length = frame.data.length;
-
-  let r = 0, g = 0, b = 0;
-  const step = 4 * 4; // skip some pixels for performance
-
-  for (let i = 0; i < length; i += step) {
-    r += frame.data[i];
-    g += frame.data[i + 1];
-    b += frame.data[i + 2];
+  // 🌈 Ambient Glow Loop
+  function updateAmbient() {
+    if (video.paused || video.ended) return;
+    try {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    } catch (err) {
+      console.warn("Frame draw error:", err);
+    }
+    requestAnimationFrame(updateAmbient);
   }
 
-  const count = length / step;
-  r = Math.floor(r / count);
-  g = Math.floor(g / count);
-  b = Math.floor(b / count);
+  // 🎬 Auto play video
+  video.addEventListener("play", () => {
+    requestAnimationFrame(updateAmbient);
+  });
 
-  return `rgb(${r}, ${g}, ${b})`;
-}
+  // 📁 Upload File Logic
+  function handleVideoFile(file) {
+    const url = URL.createObjectURL(file);
+    localStorage.setItem("lastVideo", url); // 💾 Remember
+    video.src = url;
+    video.play();
+  }
 
-function updateAmbient() {
-  if (video.paused || video.ended) return;
+  upload.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) handleVideoFile(file);
+  });
 
-  const color = getAverageColor();
-  ambient.style.background = `radial-gradient(circle, ${color} 20%, #000000 80%)`;
+  // 🌗 Toggle Ambient
+  toggleBtn.addEventListener("click", () => {
+    ambientOn = !ambientOn;
+    canvas.style.opacity = ambientOn ? "1" : "0";
+    toggleBtn.innerText = ambientOn ? "🌈 Toggle Ambient" : "❌ Ambient Off";
+  });
 
-  requestAnimationFrame(updateAmbient);
-}
+  // 🧠 Restore Last Session
+  const lastVideo = localStorage.getItem("lastVideo");
+  if (lastVideo) {
+    video.src = lastVideo;
+    video.play();
+  }
 
-// Start updating when the video plays
-video.addEventListener('play', () => {
-  requestAnimationFrame(updateAmbient);
-});
+  // 🪄 Drag & Drop
+  document.body.addEventListener("dragover", e => {
+    e.preventDefault();
+    document.body.style.border = "2px dashed white";
+  });
+
+  document.body.addEventListener("dragleave", () => {
+    document.body.style.border = "none";
+  });
+
+  document.body.addEventListener("drop", e => {
+    e.preventDefault();
+    document.body.style.border = "none";
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("video/")) {
+      handleVideoFile(file);
+    }
+  });

@@ -3,45 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ambient Mode Video</title>
+  <title>Aesthetic Ambient Video</title>
   <style>
     body {
       margin: 0;
-      background-color: #000;
+      background: black;
       overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
     }
-    .ambient-container {
- 	 position: fixed; /* Cover full viewport */
- 	 top: 0;
- 	 left: 0;
-  	width: 100vw;
-  	height: 100vh;
 
-  	display: flex;
- 	 align-items: center;
- 	 justify-content: center;
+    .ambient-wrapper {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
 
- 	 background: radial-gradient(circle, #000, #111); /* Ambient background */
- 	 transition: background 0.3s ease;
- 	 z-index: 0;
-}	
+    #ambientCanvas {
+      width: 100vw;
+      height: 100vh;
+      filter: blur(100px) brightness(1.2) saturate(1.4);
+      transform: scale(1.1);
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .video-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
     video {
-  max-width: 80vw;
-  max-height: 80vh;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
-}
+      max-width: 80vw;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 0 80px rgba(0, 0, 0, 0.4);
+      transition: box-shadow 0.3s ease;
+    }
+
+    video:hover {
+      box-shadow: 0 0 120px rgba(255, 255, 255, 0.2), 0 0 80px rgba(0, 0, 0, 0.6);
+    }
+
+    .controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .glass-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 10px 18px;
+      color: white;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .glass-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      transform: scale(1.05);
+    }
+
+    #videoUpload {
+      display: none;
+    }
+
+    label[for="videoUpload"] {
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div class="ambient-container" id="ambient">
-    <video id="video" controls crossorigin="anonymous">
-  <source src="https://s3b-assets-bucket.s3.amazonaws.com/test-videos/BigBuckBunny.mp4" type="video/mp4" />
-</video>
 
+  <!-- Upload & Controls -->
+  <div class="controls">
+    <label for="videoUpload" class="glass-btn">🎬 Upload Video</label>
+    <button id="toggleAmbient" class="glass-btn">🌈 Toggle Ambient</button>
+    <!-- You can add more fun here -->
+  </div>
+  <input type="file" id="videoUpload" accept="video/*" />
+
+  <!-- Ambient Canvas -->
+  <div class="ambient-wrapper">
+    <canvas id="ambientCanvas" width="64" height="36"></canvas>
   </div>
 
+  <!-- Video Container -->
+  <div class="video-container">
+    <video id="video" controls crossorigin="anonymous">
+      <source src="https://s3b-assets-bucket.s3.amazonaws.com/test-videos/BigBuckBunny.mp4" type="video/mp4">
+    </video>
+  </div>
   <script src="ambient.js"></script>
 </body>
 </html>
